@@ -1,0 +1,72 @@
+Ideas for improving the total result
+====================================
+* Find one or several reasonable initial approximations of a solution
+    - Find extrema between zeros and interpolate between them for an
+        inital approximation
+    - Possibly it makes sense to interpolate the zeros as well
+    - Erase zeros, if they are located to close to each other
+    - Make sure that boundary conditions are fulfilled automatically
+        (erasing zeros might actually help here)
+	
+* Use a different base for the functions to get better locality characteristics
+    - Try a wavelet base.
+    - For the imaginary part use a base of monotonic functions satisfying the
+        boundary conditions
+	
+* Combine the boundary conditions
+    $|\tau_i-\tau_{i+1}| \le \min\{ (\Im\tau_j)^2,(\Im\tau_{j+1})^2 \}$ and
+    $0 \le \Im\tau_j$ into one:
+    $$ |\tau_i-\tau_{i+1}|
+    \le \max\{ 0, \min\{ \Im\tau_j,\Im\tau_{j+1} \} \}^2 $$
+	
+* Allow phase-boost under certain circumstances
+    - If there is a big enough decreasing jump of the phase then a phase boost
+        may be applied.
+	
+* Avoid negative phase velocity
+    - Under some circumstances the fitted solutions have negative phase
+    velocity over a few samples. Often these samples could be replaced with
+    other values giving an almost identical function $a_i(t)\cos\varphi_i(t)$.
+    The idea behind that is very simple: The cosine is an even function.
+    Hence pieces with negative phase velocity could be replaced by the
+    negative of the original phase plus an integer multiple of $2\pi$.
+
+
+Things already done on the gui
+==============================
+* Let the user choose the noise level to be added to the initial
+    approximation. => This is done by preprocessing steps and
+    interprocessing steps.
+* Let the user choose the parameters of the target function. => The user can
+    enter arbitrary formulas for target functions and hence change parameters.
+
+
+Things to do on the gui
+=======================
+* Let the user interactively decide which IMF should be fitted next.
+    For example, after fitting the second IMF the user may choose to start
+    fitting a new IMF, or to find a better match for the first IMF based on
+    the current fit of the second IMF.
+* Provide facilities to export the fitted IMFs.
+* Let the user choose what shall be displayed in the graph window.
+* Let the user store and load settings files to and from the file system.
+    Repeatability!
+* Let the user choose whether only the phase shall be fitted or both phase
+    and amplitude shall be fitted.
+    
+
+Test functions for optimization tests
+=====================================
+4.5*sin(x+2)+sin(5*x+1)+sin(19*x)/3
+4*sin((x*x+x)/2+2)+sin(16*x)
+sin(x*x+x+1)*(3-x/3)+sin(20*x)*(0.4+0.1*x)
+sin(exp(x*0.6))*(7-x)
+sin(10*x+sin(3*x))*3
+3.4*sin(2*x)+3*sin(31*x)
+sin(exp(x*0.65))*(7-x)+2*sin(10*x+1)
+
+To do for scientific work
+=========================
+* Nullstellen in den Griff bekommen
+* Korrespondenzproblem und Mode-Mixing untersuchen
+* Benchmark mit Funktionen von Rudin
