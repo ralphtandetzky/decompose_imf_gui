@@ -17,6 +17,7 @@ qrc_*.cpp
 Makefile
 *-build-*
 *.autosave
+ui_*.h
 
 # editor
 *~
@@ -24,3 +25,4 @@ Makefile
 
 # others
 data/
+
