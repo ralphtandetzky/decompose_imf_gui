@@ -2,6 +2,7 @@
 #include "ui_gui_main_window.h"
 
 #include "decompose_imf_lib/calculations.h"
+#include "decompose_imf_lib/file_io.h"
 #include "decompose_imf_lib/optimization_task.h"
 
 #include "cpp_utils/exception.h"
@@ -389,22 +390,7 @@ void MainWindow::readSamplesFile( const QString & qFileName )
     {
     QU_HANDLE_ALL_EXCEPTIONS_FROM
     {
-        const auto fileName = qFileName.toStdString();
-        std::ifstream file{ fileName };
-        if ( !file )
-            CU_THROW( "Could not open the file \"" + fileName + "\"." );
-        auto vals = std::vector<double>( std::istream_iterator<double>(file),
-                                         std::istream_iterator<double>() );
-        if ( file.bad() )
-            CU_THROW( "The file \"" + fileName +
-                      "\" could not be read." );
-        if ( vals.empty() )
-            CU_THROW( "The file \"" + fileName +
-                      "\" does not contain samples." );
-        if ( !file.eof() )
-            CU_THROW( "The end of the file \"" + fileName +
-                      "\" has not been reached." );
-
+        const auto vals = dimf::readSamplesFromFile( qFileName.toStdString() );
         qu::invokeInGuiThreadAsync( [=]()
         {
             m->ui.samplesFileLineEdit->setText( qFileName );
