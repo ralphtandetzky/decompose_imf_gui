@@ -4,8 +4,7 @@ QMAKE_CXXFLAGS += -std=c++11 -pedantic
 
 TEMPLATE = app
 CONFIG += c++11 link_prl
-
-DEPENDPATH += .
+DEPENDPATH += . ../cpp_utils/ ../qt_utils/ ../decompose_imf_lib/
 INCLUDEPATH += ..
 
 HEADERS  += stdafx.h \
