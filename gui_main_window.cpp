@@ -7,6 +7,7 @@
 
 #include "cpp_utils/exception.h"
 #include "cpp_utils/formula_parser.h"
+#include "cpp_utils/locking.h"
 #include "cpp_utils/math_constants.h"
 #include "cpp_utils/std_make_unique.h"
 #include "cpp_utils/user_parameter.h"
@@ -77,10 +78,6 @@ struct MainWindow::Impl
             };
     }
 
-    /////////////////////
-    // Gui thread data //
-    /////////////////////
-
     // parent object
     MainWindow * mainWindow;
     // Contains Qt user interface elements.
@@ -104,8 +101,22 @@ struct MainWindow::Impl
     std::vector<double> samples;
     std::unique_ptr<QLabel> graphDisplay;
 
-    dimf::OptimizationTask optimizationTask;
-    qu::LoopThread worker;
+    struct SharedData
+    {
+        dimf::ContinueOption continueOption;
+/*        // Holds whether the currently running optimization task (if any)
+        // has been cancelled.
+        bool cancelled = true;
+        // Holds whether the currently running optimization task (if any)
+        // should proceed with calculating the imf of the current residue
+        // function.
+        bool shall_calculate_next_imf = false;*/
+    };
+    cu::Monitor<SharedData> shared;
+
+//    dimf::OptimizationTask optimizationTask;
+    qu::LoopThread optimizationWorker;
+    qu::LoopThread fileWorker;
 };
 
 
@@ -297,21 +308,53 @@ void MainWindow::optimize()
         QMetaObject::invokeMethod( this, "setDisplay",
                                    Q_ARG(QImage,image));
     };
+
+    params.howToContinue = [this]( size_t ) -> dimf::ContinueOption
+    {
+        return m->shared( []( Impl::SharedData & shared )
+        {
+            if ( shared.continueOption == dimf::ContinueOption::NextImf )
+            {
+                shared.continueOption = dimf::ContinueOption::Continue;
+                return dimf::ContinueOption::NextImf;
+            }
+            return shared.continueOption;
+        });
+    };
+
     m->graphDisplay->show();
 
-    m->optimizationTask.restart( params );
+    qu::invokeInThread( &m->optimizationWorker, [=]()
+    {
+        m->shared([](Impl::SharedData & shared)
+        {
+            shared.continueOption = dimf::ContinueOption::Continue;
+        });
+        dimf::runOptimization( params );
+    } );
+//    dimf::runOptimization( params );
+//    m->optimizationTask.restart( params );
 }
 
 
 void MainWindow::cancel()
 {
-    m->optimizationTask.cancel();
+    m->shared( []( Impl::SharedData & shared )
+    {
+        shared.continueOption = dimf::ContinueOption::Cancel;
+    });
+    //m->optimizationTask.cancel();
 }
 
 
 void MainWindow::calculateNextImf()
 {
-    m->optimizationTask.continueWithNextImf();
+    m->shared( []( Impl::SharedData & shared )
+    {
+        if ( shared.continueOption != dimf::ContinueOption::Cancel )
+            shared.continueOption = dimf::ContinueOption::NextImf;
+    });
+//    m->optimizationTask.continueWithNextImf();
 }
 
 
@@ -386,7 +429,7 @@ catch (...)
 void MainWindow::readSamplesFile( const QString & qFileName )
 {
     cancel();
-    qu::invokeInThreadAsync( &m->worker, [=]()
+    qu::invokeInThreadAsync( &m->fileWorker, [=]()
     {
     QU_HANDLE_ALL_EXCEPTIONS_FROM
     {
