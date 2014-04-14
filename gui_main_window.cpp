@@ -103,7 +103,9 @@ struct MainWindow::Impl
 
     struct SharedData
     {
-        dimf::ContinueOption continueOption;
+        //dimf::ContinueOption continueOption;
+//        size_t oldImf;
+        size_t nextImf;
 /*        // Holds whether the currently running optimization task (if any)
         // has been cancelled.
         bool cancelled = true;
@@ -309,16 +311,17 @@ void MainWindow::optimize()
                                    Q_ARG(QImage,image));
     };
 
-    params.howToContinue = [this]( size_t ) -> dimf::ContinueOption
+    params.howToContinue = [this]( size_t ) -> size_t
     {
         return m->shared( []( Impl::SharedData & shared )
         {
-            if ( shared.continueOption == dimf::ContinueOption::NextImf )
-            {
-                shared.continueOption = dimf::ContinueOption::Continue;
-                return dimf::ContinueOption::NextImf;
-            }
-            return shared.continueOption;
+            return shared.nextImf;
+//            if ( shared.continueOption == dimf::ContinueOption::NextImf )
+//            {
+//                shared.continueOption = dimf::ContinueOption::Continue;
+//                return dimf::ContinueOption::NextImf;
+//            }
+//            return shared.continueOption;
         });
     };
 
@@ -328,7 +331,7 @@ void MainWindow::optimize()
     {
         m->shared([](Impl::SharedData & shared)
         {
-            shared.continueOption = dimf::ContinueOption::Continue;
+            shared.nextImf = 0;
         });
         dimf::runOptimization( params );
     } );
@@ -341,7 +344,7 @@ void MainWindow::cancel()
 {
     m->shared( []( Impl::SharedData & shared )
     {
-        shared.continueOption = dimf::ContinueOption::Cancel;
+        shared.nextImf = ~size_t{0};
     });
     //m->optimizationTask.cancel();
 }
@@ -351,10 +354,9 @@ void MainWindow::calculateNextImf()
 {
     m->shared( []( Impl::SharedData & shared )
     {
-        if ( shared.continueOption != dimf::ContinueOption::Cancel )
-            shared.continueOption = dimf::ContinueOption::NextImf;
+        if ( shared.nextImf != ~size_t{0} )
+            ++shared.nextImf;
     });
-//    m->optimizationTask.continueWithNextImf();
 }
 
 
