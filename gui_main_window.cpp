@@ -58,6 +58,8 @@ struct MainWindow::Impl
             { return std::vector<std::complex<double>>(f.size()+1); };
         initializers["Interpolate zeros"] =
             &dimf::getInitialApproximationByInterpolatingZeros;
+        initializers["Fourier component"] =
+            &dimf::getInitialApproximationByFourierComponent;
 
         // display these methods in the gui.
         for ( const auto & initializer : initializers )
