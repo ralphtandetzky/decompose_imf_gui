@@ -205,6 +205,7 @@ void MainWindow::optimize()
     params.nodeDevUnits   = m->ui.nodeDevSpinBox   ->value();
     params.sigmaDevUnits  = m->ui.sigmaDevSpinBox  ->value();
     params.tauDevUnits    = m->ui.tauDevSpinBox    ->value();
+    params.freqSwingFactor= m->ui.freqSwingSpinBox ->value();
     params.preprocessing  = m->ui.preprocessingTextEdit
             ->toPlainText().toStdString();
     params.interprocessing = m->ui.interprocessingTextEdit
