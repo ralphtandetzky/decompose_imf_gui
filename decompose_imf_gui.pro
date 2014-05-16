@@ -24,6 +24,3 @@ LIBS += \
 
 OTHER_FILES += \
     notes.txt \
-
-RESOURCES += \
-    resources.qrc \

@@ -4,6 +4,7 @@
 int main(int argc, char *argv[])
 {
     qu::ExceptionHandlingApplication a(argc, argv);
+    Q_INIT_RESOURCE(qt_utils);
     // Set up global organization name and application name, so
     // the default constructor of QSettings will use these
     // consistently throughout the application.
