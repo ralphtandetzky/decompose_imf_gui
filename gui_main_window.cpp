@@ -336,7 +336,7 @@ void MainWindow::optimize()
         {
             shared.nextImf = 0;
         });
-        dimf::runOptimization( params );
+        dimf::runOptimization( params, std::cout );
     } );
 //    dimf::runOptimization( params );
 //    m->optimizationTask.restart( params );
